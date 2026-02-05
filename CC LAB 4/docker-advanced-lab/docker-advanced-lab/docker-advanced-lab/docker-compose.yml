@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    networks:
+      - chat-net
+
+  user-a:
+    build: .
+    stdin_open: true
+    tty: true
+    environment:
+      USER_NAME: user-a
+      RABBIT_HOST: rabbitmq
+      QUEUE_NAME: queue_a
+      TARGET_QUEUE: queue_b
+    # STAGE 5: Uncomment this for persistence demonstration
+    volumes:
+      - chat-history:/app/data
+    networks:
+      - chat-net
+    depends_on:
+      - rabbitmq
+
+  user-b:
+    build: .
+    stdin_open: true
+    tty: true
+    environment:
+      USER_NAME: user-b
+      RABBIT_HOST: rabbitmq
+      QUEUE_NAME: queue_b
+      TARGET_QUEUE: queue_a
+    # STAGE 5: Uncomment this for persistence demonstration
+    volumes:
+     - chat-history:/app/data
+    networks:
+      - chat-net
+    depends_on:
+      - rabbitmq
+
+networks:
+  chat-net:
+    driver: bridge
+
+# STAGE 5: Uncomment this section for persistence demonstration
+volumes:
+  chat-history:
